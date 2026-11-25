@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tok&amp;Stok — Lista de Casamento | Protótipo em Código (2026)</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Design Tokens reais da interface -->
+  <style id="design-tokens-style">
+    :root {
+      /* Brand */
+      --ts-brand-primary: #00684A;
+      --ts-brand-primary-hover: #00523A;
+      --ts-brand-soft: #E8F3EF;
+
+      /* Surfaces */
+      --ts-surface-bg: #FAFAFA;
+      --ts-surface-card: #FFFFFF;
+      --ts-banner-dark: #1F2933;
+
+      /* Typography */
+      --ts-font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --ts-text-primary: #1E1E1E;
+      --ts-text-secondary: #525252;
+      --ts-text-muted: #737373;
+
+      /* Borders & Radii */
+      --ts-border-subtle: #E5E7EB;
+      --ts-radius-btn: 6px;
+      --ts-radius-card: 8px;
+
+      /* Semantic Feedback */
+      --ts-feedback-danger: #C53030;
+      --ts-feedback-warning-bg: #FEF3C7;
+      --ts-feedback-warning-text: #92400E;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-family: var(--ts-font-family);
+      background-color: var(--ts-surface-bg);
+      color: var(--ts-text-primary);
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--ts-surface-bg);
+      color: var(--ts-text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Foco visível acessível */
+    :focus-visible {
+      outline: 2px solid var(--ts-brand-primary);
+      outline-offset: 2px;
+    }
+
+    /* Botões padrão Tok&Stok */
+    .btn-primary {
+      background-color: var(--ts-brand-primary);
+      color: #FFFFFF;
+      border-radius: var(--ts-radius-btn);
+      transition: background-color 0.18s ease, transform 0.12s ease, opacity 0.18s ease;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: var(--ts-brand-primary-hover);
+    }
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background-color: var(--ts-surface-card);
+      color: var(--ts-brand-primary);
+      border: 1px solid var(--ts-brand-primary);
+      border-radius: var(--ts-radius-btn);
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+    .btn-outline:hover {
+      background-color: var(--ts-brand-soft);
+    }
+
+    /* Checkbox customizado acessível */
+    .ts-checkbox {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      border: 1.5px solid #B5BCC4;
+      border-radius: 4px;
+      background-color: #FFFFFF;
+      display: inline-grid;
+      place-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+    .ts-checkbox::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      transform: scale(0);
+      transition: transform 0.12s ease-in-out;
+      background-color: #FFFFFF;
+      clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+    }
+    .ts-checkbox:checked {
+      background-color: var(--ts-brand-primary);
+      border-color: var(--ts-brand-primary);
+    }
+    .ts-checkbox:checked::before {
+      transform: scale(1);
+    }
+
+    /* Abas */
+    .ts-tab {
+      border-radius: var(--ts-radius-btn);
+      border: 1px solid var(--ts-border-subtle);
+      background-color: var(--ts-surface-card);
+      color: var(--ts-text-secondary);
+      transition: all 0.18s ease;
+    }
+    .ts-tab:hover:not(.ts-tab-active) {
+      border-color: #B5BCC4;
+      color: var(--ts-text-primary);
+    }
+    .ts-tab-active {
+      background-color: var(--ts-brand-primary);
+      border-color: var(--ts-brand-primary);
+      color: #FFFFFF;
+    }
+
+    /* Animações suaves de modais e drawer */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes slideInRight {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease forwards;
+    }
+    .animate-scale-in {
+      animation: scaleIn 0.22s ease forwards;
+    }
+    .animate-slide-right {
+      animation: slideInRight 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .ts-spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--ts-brand-soft);
+      border-top-color: var(--ts-brand-primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- 1. BARRA SUPERIOR DE CONTEXTO DO PORTFÓLIO -->
+  <div class="bg-[#111827] text-white border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex flex-wrap items-center gap-2.5">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase bg-[#00684A] text-white">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
+          PROTÓTIPO EM CÓDIGO • 2026
+        </span>
+        <span class="text-xs sm:text-sm text-gray-200 font-medium">
+          Tok&amp;Stok Lista de Casamento — <span class="text-white font-semibold">Gabriel Almeida</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          id="btnOpenCloseFlow"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5 text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          Simular Fricção: Encerrar Lista
+        </button>
+
+        <button
+          id="btnOpenTokens"
+          type="button"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition cursor-pointer"
+        >
+          <svg class="w-3.5 h-3.5 text-emerald-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402M6.75 21A3.75 3.75 0 013 17.25V4.125C3 3.504 3.504 3 4.125 3h5.25c.621 0 1.125.504 1.125 1.125v4.072M6.75 21a3.75 3.75 0 003.75-3.75V8.197M6.75 21h13.125c.621 0 1.125-.504 1.125-1.125v-5.25c0-.621-.504-1.125-1.125-1.125h-4.072M10.5 8.197l2.88-2.88c.438-.439 1.15-.439 1.59 0l3.712 3.713c.44.44.44 1.152 0 1.59l-2.879 2.88M6.75 17.25h.008v.008H6.75v-.008z" />
+          </svg>
+          Design Tokens
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CABEÇALHO TOK&STOK -->
+  <header class="bg-white border-b border-[var(--ts-border-subtle)]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-4 sm:gap-6">
+        <!-- Logo tipográfico minimalista Tok&Stok -->
+        <a href="#topo" class="flex items-baseline tracking-tight select-none" aria-label="Tok&Stok">
+          <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--ts-brand-primary)]">TOK</span>
+          <span class="text-lg sm:text-xl font-semibold italic text-[var(--ts-brand-primary)] mx-0.5">&amp;</span>
+          <span class="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--ts-brand-primary)]">STOK</span>
+        </a>
+
+        <span class="hidden sm:inline-block h-5 w-px bg-[var(--ts-border-subtle)]" aria-hidden="true"></span>
+
+        <!-- Breadcrumb -->
+        <nav aria-label="Navegação estrutural" class="hidden sm:flex items-center text-xs font-medium text-[var(--ts-text-muted)] gap-2">
+          <span>Lista de casamento</span>
+          <span aria-hidden="true">/</span>
+          <span class="text-[var(--ts-text-primary)] font-semibold">Lista encerrada</span>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs text-[var(--ts-text-secondary)]">
+        <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--ts-brand-soft)] text-[var(--ts-brand-primary)] font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-[var(--ts-brand-primary)]"></span>
+          1ª Entrega &amp; Montagem Grátis
+        </span>
+        <span class="font-medium text-[var(--ts-text-primary)]">Olá, Alan &amp; Ada</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- FAIXA DE ALERTA ESCURA FECHÁVEL -->
+  <div id="deadlineBanner" role="region" aria-label="Aviso de prazo do saldo" class="bg-[var(--ts-banner-dark)] text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2.5 text-[11px] sm:text-xs font-semibold tracking-wide">
+        <svg class="w-4 h-4 text-emerald-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+        </svg>
+        <span>LEMBRE-SE: VOCÊ TEM ATÉ O DIA 30/11/2026 PARA USAR SEU SALDO DISPONÍVEL EM NOSSA LOJA ONLINE OU NAS NOSSAS LOJAS FÍSICAS</span>
+      </div>
+      <button
+        id="btnDismissBanner"
+        type="button"
+        aria-label="Fechar aviso de prazo"
+        class="p-1.5 rounded-[6px] text-gray-300 hover:text-white hover:bg-white/10 transition cursor-pointer shrink-0"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main id="topo" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+
+    <!-- 3. CABEÇALHO DO CASAL & RESUMO SUPERIOR -->
+    <section class="mb-8" aria-labelledby="page-heading">
+      <!-- Identificação do Casal + Saldo -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-7 border-b border-[var(--ts-border-subtle)]">
+        <div class="flex items-center gap-4">
+          <!-- Avatar circular minimalista com alianças/mãos -->
+          <div class="w-16 h-16 rounded-full bg-[var(--ts-brand-soft)] border border-[#CBE4DB] flex items-center justify-center shrink-0" aria-hidden="true">
+            <svg class="w-8 h-8 text-[var(--ts-brand-primary)]" viewBox="0 0 36 36" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="14" cy="19" r="7" />
+              <circle cx="22" cy="19" r="7" />
+              <path d="M14 12l2-3.5h-4L14 12z" />
+              <path d="M22 12l2-3.5h-4L22 12z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--ts-brand-primary)]">
+              Lista Nº: 269880
+            </p>
+            <p class="text-base sm:text-lg font-bold text-[var(--ts-text-primary)] mt-0.5">
+              Alan Turing &amp; Ada Lovelace
+            </p>
+            <h1 id="page-heading" class="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--ts-text-primary)] mt-1">
+              Escolha agora o que fica e o que sai
+            </h1>
+          </div>
+        </div>
+
+        <!-- Bloco de Saldo Total + Ver Extrato -->
+        <div class="flex flex-wrap items-center gap-4 sm:gap-5 bg-white border border-[var(--ts-border-subtle)] rounded-[8px] px-5 py-4 self-start md:self-center">
+          <div>
+            <span class="block text-xs font-medium text-[var(--ts-text-muted)]">Saldo total</span>
+            <span class="text-2xl font-extrabold tracking-tight text-[var(--ts-brand-primary)]">R$ 2.969,00</span>
+          </div>
+          <button
+            id="btnOpenStatement"
+            type="button"
+            class="btn-outline px-4 py-2.5 text-xs font-bold tracking-wider uppercase cursor-pointer"
+          >
+            VER EXTRATO
+          </button>
+        </div>
+      </div>
+
+      <!-- 3 Cards Compactos Omnichannel -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6">
+        <div class="bg-white border border-[var(--ts-border-subtle)] rounded-[8px] px-4 py-3.5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-[6px] bg-[var(--ts-brand-soft)] text-[var(--ts-brand-primary)] flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xs font-bold text-[var(--ts-brand-primary)]">Selecione os presentes desejados</h2>
+            <p class="text-xs text-[var(--ts-text-secondary)] mt-0.5 leading-relaxed">
+              Adicione itens da sua lista ao carrinho usando o saldo acumulado.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white border border-[var(--ts-border-subtle)] rounded-[8px] px-4 py-3.5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-[6px] bg-[var(--ts-brand-soft)] text-[var(--ts-brand-primary)] flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xs font-bold text-[var(--ts-brand-primary)]">Use em todo o site</h2>
+            <p class="text-xs text-[var(--ts-text-secondary)] mt-0.5 leading-relaxed">
+              Troque por qualquer um dos +4.500 produtos do catálogo online.
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-white border border-[var(--ts-border-subtle)] rounded-[8px] px-4 py-3.5 flex items-start gap-3">
+          <div class="w-8 h-8 rounded-[6px] bg-[var(--ts-brand-soft)] text-[var(--ts-brand-primary)] flex items-center justify-center shrink-0 mt-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xs font-bold text-[var(--ts-brand-primary)]">Vá até uma loja física</h2>
+            <p class="text-xs text-[var(--ts-text-secondary)] mt-0.5 leading-relaxed">
+              Seu saldo também fica disponível no CPF em qualquer loja Tok&amp;Stok.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. LAYOUT PRINCIPAL EM 2 COLUNAS (65% LISTA / 35% CALCULADORA STICKY) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- COLUNA ESQUERDA (8 de 12 cols ~ 66%) -->
+      <section class="lg:col-span-8" aria-label="Lista de itens e vales-presente">
+        <!-- Navegação por Abas -->
+        <div role="tablist" aria-label="Categorias de presentes" class="flex flex-wrap gap-2.5 mb-6">
+          <button
+            role="tab"
+            id="tab-purchased"
+            aria-selected="true"
+            aria-controls="panel-purchased"
+            data-tab="purchased"
+            type="button"
+            class="ts-tab ts-tab-active px-4 py-2.5 text-xs font-bold tracking-wider uppercase cursor-pointer"
+          >
+            PRESENTES COM COMPRADOR <span class="ml-1 opacity-80">(6)</span>
+          </button>
+
+          <button
+            role="tab"
+            id="tab-unpurchased"
+            aria-selected="false"
+            aria-controls="panel-unpurchased"
+            data-tab="unpurchased"
+            type="button"
+            class="ts-tab px-4 py-2.5 text-xs font-bold tracking-wider uppercase cursor-pointer"
+          >
+            PRESENTES SEM COMPRADOR <span class="ml-1 opacity-80">(4)</span>
+          </button>
+
+          <button
+            role="tab"
+            id="tab-vouchers"
+            aria-selected="false"
+            aria-controls="panel-vouchers"
+            data-tab="vouchers"
+            type="button"
+            class="ts-tab px-4 py-2.5 text-xs font-bold tracking-wider uppercase cursor-pointer"
+          >
+            VALE-PRESENTE <span class="ml-1 opacity-80">(3)</span>
+          </button>
+        </div>
+
+        <!-- Painel da Aba Ativa (Renderizado dinamicamente pelo JS) -->
+        <div id="tabContentContainer"></div>
+      </section>
+
+      <!-- COLUNA DIREITA (4 de 12 cols ~ 34%) — CALCULADORA STICKY -->
+      <aside class="lg:col-span-4 lg:sticky lg:top-6" aria-label="Calculadora de saldo em tempo real">
+        <div class="bg-white border border-[var(--ts-border-subtle)] rounded-[8px] shadow-[0_6px_24px_rgba(0,0,0,0.04)] p-6">
+          <div class="flex items-center justify-between mb-5">
+            <h2 class="text-sm font-bold uppercase tracking-wider text-[var(--ts-text-primary)]">
+              Resumo do resgate
+            </h2>
+            <span class="text-[11px] font-semibold text-[var(--ts-brand-primary)] bg-[var(--ts-brand-soft)] px-2 py-0.5 rounded-full">
+              Tempo real
+            </span>
+          </div>
+
+          <!-- Linhas da Calculadora -->
+          <dl class="space-y-3 text-sm">
+            <div class="flex items-center justify-between">
+              <dt class="text-[var(--ts-text-secondary)]">Saldo total</dt>
+              <dd id="calcTotalBalance" class="font-semibold text-[var(--ts-text-primary)] tabular-nums">R$ 2.969,00</dd>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <dt class="text-[var(--ts-text-secondary)]">
+                Itens selecionados (<span id="calcSelectedCount" class="font-bold text-[var(--ts-brand-primary)]">0</span>)
+              </dt>
+              <dd id="calcSelectedValue" class="font-semibold text-[var(--ts-text-primary)] tabular-nums">- R$ 0,00</dd>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <dt class="text-[var(--ts-text-secondary)]">Saldo disponível</dt>
+              <dd id="calcRemainingBalance" class="font-semibold text-[var(--ts-brand-primary)] tabular-nums">R$ 2.969,00</dd>
+            </div>
+          </dl>
+
+          <hr class="my-5 border-[var(--ts-border-subtle)]" />
+
+          <!-- Valor a Pagar -->
+          <div class="flex items-baseline justify-between mb-4">
+            <span class="text-sm font-bold text-[var(--ts-text-primary)]">Valor a pagar</span>
+            <span id="calcAmountToPay" class="text-3xl font-extrabold tracking-tight text-[var(--ts-text-primary)] tabular-nums">
+              R$ 0,00
+            </span>
+          </div>
+
+          <!-- Mensagem Dinâmica de Estado Financeiro -->
+          <div id="calcStatusBanner" role="status" aria-live="polite" class="rounded-[6px] p-3.5 text-xs leading-relaxed mb-5">
+            <!-- Atualizado via JS -->
+          </div>
+
+          <!-- Botão CTA Principal -->
+          <button
+            id="btnAddToCart"
+            type="button"
+            class="btn-primary w-full py-3.5 px-4 text-xs font-bold tracking-wider uppercase cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span id="btnAddToCartLabel">ADICIONAR ITENS NO CARRINHO</span>
+          </button>
+
+          <p class="text-[11px] text-[var(--ts-text-muted)] text-center mt-3 leading-relaxed">
+            O saldo não utilizado continua disponível na sua conta até 30/11/2026.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- RODAPÉ DISCRETO -->
+  <footer class="mt-12 border-t border-[var(--ts-border-subtle)] bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[var(--ts-text-muted)]">
+      <span>Protótipo funcional interativo — Case Lista de Casamento Tok&amp;Stok (2019 → 2026 com GenAI)</span>
+      <span>Arquitetura de Produto, UX/UI &amp; Content Design • Gabriel Almeida</span>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: SEU EXTRATO                                                  -->
+  <!-- ===================================================================== -->
+  <div
+    id="modalStatement"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalStatementTitle"
+    class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-[1px] animate-fade-in"
+  >
+    <div class="bg-white rounded-[8px] max-w-md w-full p-6 sm:p-7 shadow-2xl border border-[var(--ts-border-subtle)] relative animate-scale-in">
+      <button
+        type="button"
+        data-close-modal="modalStatement"
+        aria-label="Fechar modal de extrato"
+        class="absolute top-4 right-4 p-2 rounded-[6px] text-[var(--ts-text-muted)] hover:text-[var(--ts-text-primary)] hover:bg-gray-100 transition cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <h2 id="modalStatementTitle" class="text-xl font-bold text-[var(--ts-text-primary)] text-center mb-6">
+        Seu extrato
+      </h2>
+
+      <dl class="space-y-3.5 text-sm">
+        <div class="flex items-center justify-between">
+          <dt class="text-[var(--ts-text-secondary)]">Presentes recebidos</dt>
+          <dd class="font-semibold text-[var(--ts-text-primary)] tabular-nums">R$ 4.450,00</dd>
+        </div>
+        <div class="flex items-center justify-between">
+          <dt class="text-[var(--ts-text-secondary)]">Vale-presente</dt>
+          <dd class="font-semibold text-[var(--ts-text-primary)] tabular-nums">R$ 1.560,00</dd>
+        </div>
+        <div class="flex items-center justify-between">
+          <dt class="text-[var(--ts-text-secondary)]">10% bônus</dt>
+          <dd class="font-bold text-[var(--ts-brand-primary)] tabular-nums">+ R$ 661,00</dd>
+        </div>
+        <div class="flex items-center justify-between">
+          <dt class="text-[var(--ts-text-secondary)]">Pedido 0000000</dt>
+          <dd class="font-semibold text-[var(--ts-feedback-danger)] tabular-nums">- R$ 3.642,00</dd>
+        </div>
+      </dl>
+
+      <hr class="my-5 border-[var(--ts-border-subtle)]" />
+
+      <div class="flex items-center justify-between">
+        <span class="text-sm font-bold text-[var(--ts-text-primary)]">Saldo total</span>
+        <span class="text-2xl font-extrabold text-[var(--ts-brand-primary)] tabular-nums">R$ 2.969,00</span>
+      </div>
+
+      <p class="mt-5 text-[11px] text-[var(--ts-text-muted)] bg-[var(--ts-surface-bg)] border border-[var(--ts-border-subtle)] rounded-[6px] p-3 leading-relaxed">
+        <strong>Como calculamos seu bônus:</strong> você recebe 10% extras sobre o valor acumulado em presentes e vales-presente ao encerrar a lista dentro do prazo do regulamento.
+      </p>
+
+      <button
+        type="button"
+        data-close-modal="modalStatement"
+        class="btn-primary w-full mt-5 py-3 text-xs font-bold tracking-wider uppercase cursor-pointer"
+      >
+        FECHAR EXTRATO
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: FRICÇÃO INTENCIONAL (ENCERRAR LISTA -> LOADING -> SUCESSO)   -->
+  <!-- ===================================================================== -->
+  <div
+    id="modalCloseList"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalCloseListTitle"
+    class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/55 backdrop-blur-[1px] animate-fade-in"
+  >
+    <!-- Etapa A: Confirmação Irreversível -->
+    <div id="closeStepConfirm" class="bg-white rounded-[8px] max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[var(--ts-border-subtle)] relative animate-scale-in">
+      <button
+        type="button"
+        data-close-modal="modalCloseList"
+        aria-label="Fechar confirmação"
+        class="absolute top-4 right-4 p-2 rounded-[6px] text-[var(--ts-text-muted)] hover:text-[var(--ts-text-primary)] hover:bg-gray-100 transition cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <span class="inline-block text-[11px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full mb-3">
+        Ação irreversível
+      </span>
+
+      <h2 id="modalCloseListTitle" class="text-xl sm:text-2xl font-bold text-[var(--ts-text-primary)]">
+        Quer mesmo encerrar a lista?
+      </h2>
+
+      <p class="text-sm text-[var(--ts-text-secondary)] mt-3 leading-relaxed">
+        Verifiquem se os convidados não querem comprar mais nada. Ao decidir encerrar, <strong>vocês não poderão mais alterar a lista</strong> e os convidados perdem a oportunidade de comprar novos presentes.
+      </p>
+
+      <ul class="mt-5 space-y-2.5 bg-[var(--ts-brand-soft)] border border-[#CBE4DB] rounded-[6px] p-4 text-sm font-semibold text-[var(--ts-brand-primary)]">
+        <li class="flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+          + 10% de bônus sobre o valor total da lista
+        </li>
+        <li class="flex items-center gap-2">
+          <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+          + 1ª entrega e montagem grátis
+        </li>
+      </ul>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+        <button
+          id="btnConfirmCloseList"
+          type="button"
+          class="btn-primary py-3 px-4 text-xs font-bold tracking-wider uppercase cursor-pointer"
+        >
+          ENCERRAR MINHA LISTA AGORA
+        </button>
+        <button
+          type="button"
+          data-close-modal="modalCloseList"
+          class="btn-outline py-3 px-4 text-xs font-bold tracking-wider uppercase cursor-pointer"
+        >
+          CONTINUAR EDITANDO MINHA LISTA
+        </button>
+      </div>
+    </div>
+
+    <!-- Etapa B: Loading (1,5s) -->
+    <div id="closeStepLoading" class="hidden bg-white rounded-[8px] max-w-md w-full p-10 shadow-2xl border border-[var(--ts-border-subtle)] text-center animate-scale-in">
+      <div class="ts-spinner mx-auto mb-5" role="status" aria-label="Carregando"></div>
+      <p class="text-base font-semibold text-[var(--ts-text-primary)]">
+        Aguarde enquanto encerramos sua lista...
+      </p>
+      <p class="text-xs text-[var(--ts-text-muted)] mt-1.5">
+        Calculando créditos, vales-presente e bônus de 10%.
+      </p>
+    </div>
+
+    <!-- Etapa C: Confirmação Pós-Encerramento -->
+    <div id="closeStepSuccess" class="hidden bg-white rounded-[8px] max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[var(--ts-border-subtle)] relative animate-scale-in">
+      <div class="w-12 h-12 rounded-full bg-[var(--ts-brand-soft)] text-[var(--ts-brand-primary)] flex items-center justify-center mb-4">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+        </svg>
+      </div>
+
+      <h2 class="text-xl sm:text-2xl font-bold text-[var(--ts-text-primary)] leading-snug">
+        Sua lista foi encerrada. Só que o melhor ainda nem começou.
+      </h2>
+
+      <p class="text-sm text-[var(--ts-text-secondary)] mt-3 leading-relaxed">
+        Você já pode visualizar o saldo final de <strong>R$ 2.969,00</strong> e escolher os produtos que realmente deseja ter em sua casa. E tem mais: você pode usar seu saldo como preferir, inclusive em produtos fora da lista, comprando online ou em qualquer uma das nossas lojas.
+      </p>
+
+      <div class="mt-6 flex justify-end">
+        <button
+          type="button"
+          data-close-modal="modalCloseList"
+          class="btn-primary px-6 py-3 text-xs font-bold tracking-wider uppercase cursor-pointer"
+        >
+          ENTENDI, IR PARA O RESGATE
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: CONFIRMAÇÃO DE ENVIO AO CARRINHO                             -->
+  <!-- ===================================================================== -->
+  <div
+    id="modalCartSuccess"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalCartSuccessTitle"
+    class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/50 backdrop-blur-[1px] animate-fade-in"
+  >
+    <div class="bg-white rounded-[8px] max-w-md w-full p-6 sm:p-7 shadow-2xl border border-[var(--ts-border-subtle)] relative animate-scale-in">
+      <button
+        type="button"
+        data-close-modal="modalCartSuccess"
+        aria-label="Fechar resumo do carrinho"
+        class="absolute top-4 right-4 p-2 rounded-[6px] text-[var(--ts-text-muted)] hover:text-[var(--ts-text-primary)] hover:bg-gray-100 transition cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="w-11 h-11 rounded-full bg-[var(--ts-brand-soft)] text-[var(--ts-brand-primary)] flex items-center justify-center mb-4">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+        </svg>
+      </div>
+
+      <h2 id="modalCartSuccessTitle" class="text-xl font-bold text-[var(--ts-text-primary)]">
+        Itens adicionados ao carrinho!
+      </h2>
+      <p id="cartSuccessSubtitle" class="text-sm text-[var(--ts-text-secondary)] mt-1.5"></p>
+
+      <dl id="cartSuccessSummary" class="mt-5 space-y-2.5 text-sm bg-[var(--ts-surface-bg)] border border-[var(--ts-border-subtle)] rounded-[6px] p-4">
+        <!-- Preenchido via JS -->
+      </dl>
+
+      <button
+        type="button"
+        data-close-modal="modalCartSuccess"
+        class="btn-primary w-full mt-6 py-3 text-xs font-bold tracking-wider uppercase cursor-pointer"
+      >
+        CONTINUAR NO PROTÓTIPO
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- DRAWER 4: DESIGN TOKENS INSPECTOR                                     -->
+  <!-- ===================================================================== -->
+  <div
+    id="modalTokens"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTokensTitle"
+    class="fixed inset-0 z-50 hidden justify-end bg-black/45 backdrop-blur-[1px] animate-fade-in"
+  >
+    <div class="bg-white w-full max-w-md h-full shadow-2xl flex flex-col animate-slide-right">
+      <div class="px-6 py-5 border-b border-[var(--ts-border-subtle)] flex items-center justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--ts-brand-primary)]">Handoff Engenharia</span>
+          <h2 id="modalTokensTitle" class="text-lg font-bold text-[var(--ts-text-primary)]">Design Tokens (:root)</h2>
+        </div>
+        <button
+          type="button"
+          data-close-modal="modalTokens"
+          aria-label="Fechar painel de Design Tokens"
+          class="p-2 rounded-[6px] text-[var(--ts-text-muted)] hover:text-[var(--ts-text-primary)] hover:bg-gray-100 transition cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <!-- Swatches de Cores -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--ts-text-muted)] mb-3">Paleta &amp; Semântica</h3>
+          <div id="tokenSwatchesGrid" class="space-y-2"></div>
+        </div>
+
+        <!-- Tipografia & Raios -->
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--ts-text-muted)] mb-3">Tipografia &amp; Geometria</h3>
+          <div class="grid grid-cols-2 gap-2.5 text-xs">
+            <div class="p-3 rounded-[6px] border border-[var(--ts-border-subtle)] bg-[var(--ts-surface-bg)]">
+              <span class="block text-[var(--ts-text-muted)]">Fonte</span>
+              <span class="font-bold text-[var(--ts-text-primary)]">Plus Jakarta Sans</span>
+            </div>
+            <div class="p-3 rounded-[6px] border border-[var(--ts-border-subtle)] bg-[var(--ts-surface-bg)]">
+              <span class="block text-[var(--ts-text-muted)]">Border Radius</span>
+              <span class="font-bold text-[var(--ts-text-primary)]">6px (CTA) / 8px (Card)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bloco CSS Copiável -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--ts-text-muted)]">CSS Variables</h3>
+            <button
+              id="btnCopyTokens"
+              type="button"
+              class="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--ts-brand-primary)] hover:underline cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184" />
+              </svg>
+              <span id="copyTokensLabel">Copiar CSS</span>
+            </button>
+          </div>
+          <pre id="cssTokensCode" class="text-[11px] leading-relaxed bg-[#111827] text-emerald-200 p-4 rounded-[6px] overflow-x-auto font-mono"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT PRINCIPAL DA APLICAÇÃO -->
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. ESTADO E DADOS DO PROTÓTIPO
+      // =========================================================================
+      const TOTAL_BALANCE = 2969.00; // Saldo total do casal (4450 + 1560 + 661 - 3642)
+
+      // Ícones SVG minimalistas por tipo de móvel/decoração
+      const PRODUCT_ICONS = {
+        chair: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17V9a3 3 0 013-3h8a3 3 0 013 3v8"/><path d="M8 17h16v3H8z"/><path d="M10 20l-2 7M22 20l2 7M11 23h10"/></svg>`,
+        mirror: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="18" r="9"/><path d="M16 9V5"/><circle cx="16" cy="4" r="1"/><path d="M12.5 14.5l3-3M14 21l5-5"/></svg>`,
+        rack: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="24" height="11" rx="1.5"/><path d="M12 11v11M20 11v11M12 16.5h8M7 22v4M25 22v4"/></svg>`,
+        lamp: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11 27h10M16 27V12l5-5"/><path d="M19 5l6 6-4 1.5-3.5-3.5L19 5z"/></svg>`,
+        glasses: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7h6l-1 8a2 2 0 01-4 0L9 7zM12 17v8M9.5 25h5"/><path d="M18 7h6l-1 8a2 2 0 01-4 0l-1-8zM21 17v8M18.5 25h5"/></svg>`,
+        rug: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="20" height="16" rx="1"/><path d="M16 11l5 5-5 5-5-5 5-5zM4 10h2M4 16h2M4 22h2M26 10h2M26 16h2M26 22h2"/></svg>`,
+        sofa: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15V10a2 2 0 012-2h16a2 2 0 012 2v5"/><path d="M4 15h3v7H4zM25 15h3v7h-3zM7 17h18v5H7zM7 22v3M25 22v3"/></svg>`,
+        armchair: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15V9a2 2 0 012-2h10a2 2 0 012 2v6"/><path d="M6 15h4v7H6zM22 15h4v7h-4zM10 17h12v5H10zM9 22v4M23 22v4"/></svg>`,
+        pots: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13h16v9a3 3 0 01-3 3H11a3 3 0 01-3-3v-9z"/><path d="M6 15h2M24 15h2M10 13a6 6 0 0112 0M16 7v2"/></svg>`,
+        table: `<svg class="w-7 h-7 text-[#00684A]" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="16" cy="12" rx="10" ry="3.5"/><path d="M10 15l-2 11M22 15l2 11M16 15.5V26"/></svg>`
+      };
+
+      // Produtos das abas 1 e 2 (3 primeiros pré-selecionados para demonstrar o cálculo vivo)
+      const state = {
+        activeTab: 'purchased',
+        isClosingLoading: false,
+        products: [
+          // Aba 1: Presentes com comprador
+          {
+            id: 'p1',
+            tab: 'purchased',
+            name: 'Eames Wood Kit c/ 2 Cadeiras',
+            buyer: 'Marie Curie',
+            price: 549.00,
+            qty: 1,
+            selected: true,
+            icon: 'chair'
+          },
+          {
+            id: 'p2',
+            tab: 'purchased',
+            name: 'Pelicano Espelho Redondo 60 cm',
+            buyer: 'Rosalind Franklin',
+            price: 320.00,
+            qty: 1,
+            selected: true,
+            icon: 'mirror'
+          },
+          {
+            id: 'p3',
+            tab: 'purchased',
+            name: 'Roomy Rack 2 Portas 1 Gaveta',
+            buyer: 'Simone de Beauvoir',
+            price: 1190.00,
+            qty: 1,
+            selected: true,
+            icon: 'rack'
+          },
+          {
+            id: 'p4',
+            tab: 'purchased',
+            name: 'Luminária de Piso Articulada',
+            buyer: 'Margaret Hamilton',
+            price: 410.00,
+            qty: 1,
+            selected: false,
+            icon: 'lamp'
+          },
+          {
+            id: 'p5',
+            tab: 'purchased',
+            name: 'Jogo de Taças Cristal 6 Peças',
+            buyer: 'Buzz Aldrin',
+            price: 280.00,
+            qty: 1,
+            selected: false,
+            icon: 'glasses'
+          },
+          {
+            id: 'p6',
+            tab: 'purchased',
+            name: 'Tapete Geométrico Algodão 150x200',
+            buyer: 'Steve Wozniak',
+            price: 690.00,
+            qty: 1,
+            selected: false,
+            icon: 'rug'
+          },
+          // Aba 2: Presentes sem comprador
+          {
+            id: 'u1',
+            tab: 'unpurchased',
+            name: 'Caraíva Sofá 2 Lugares Reclinável',
+            buyer: null,
+            price: 1890.00,
+            qty: 1,
+            selected: false,
+            icon: 'sofa'
+          },
+          {
+            id: 'u2',
+            tab: 'unpurchased',
+            name: 'Poltrona Estofada Vintage',
+            buyer: null,
+            price: 980.00,
+            qty: 1,
+            selected: false,
+            icon: 'armchair'
+          },
+          {
+            id: 'u3',
+            tab: 'unpurchased',
+            name: 'Conjunto de Panelas Cerâmica 5 Peças',
+            buyer: null,
+            price: 460.00,
+            qty: 1,
+            selected: false,
+            icon: 'pots'
+          },
+          {
+            id: 'u4',
+            tab: 'unpurchased',
+            name: 'Mesa Lateral Madeira Maciça',
+            buyer: null,
+            price: 350.00,
+            qty: 1,
+            selected: false,
+            icon: 'table'
+          }
+        ],
+        // Aba 3: Vales-presente (somando exatamente R$ 1.560,00)
+        vouchers: [
+          { id: 'v1', buyer: 'Grace Hopper', date: '12/11/2026', amount: 600.00, message: 'Muitas felicidades na casa nova!' },
+          { id: 'v2', buyer: 'Katherine Johnson', date: '15/11/2026', amount: 560.00, message: 'Escolham algo especial para a sala.' },
+          { id: 'v3', buyer: 'Nikola Tesla', date: '18/11/2026', amount: 400.00, message: 'Um brinde ao novo capítulo de vocês!' }
+        ]
+      };
+
+      // Lista de Design Tokens para o Inspector
+      const DESIGN_TOKENS = [
+        { name: '--ts-brand-primary', value: '#00684A', label: 'Brand Primary' },
+        { name: '--ts-brand-primary-hover', value: '#00523A', label: 'Brand Hover' },
+        { name: '--ts-brand-soft', value: '#E8F3EF', label: 'Brand Soft Surface' },
+        { name: '--ts-surface-bg', value: '#FAFAFA', label: 'Page Background' },
+        { name: '--ts-surface-card', value: '#FFFFFF', label: 'Card Surface' },
+        { name: '--ts-banner-dark', value: '#1F2933', label: 'Alert Banner Dark' },
+        { name: '--ts-text-primary', value: '#1E1E1E', label: 'Text Primary' },
+        { name: '--ts-text-secondary', value: '#525252', label: 'Text Secondary' },
+        { name: '--ts-text-muted', value: '#737373', label: 'Text Muted' },
+        { name: '--ts-border-subtle', value: '#E5E7EB', label: 'Border Subtle' },
+        { name: '--ts-feedback-danger', value: '#C53030', label: 'Feedback Danger' },
+        { name: '--ts-feedback-warning-bg', value: '#FEF3C7', label: 'Warning Surface' },
+        { name: '--ts-feedback-warning-text', value: '#92400E', label: 'Warning Text' }
+      ];
+
+      // =========================================================================
+      // 2. UTILITÁRIOS DE FORMATAÇÃO E CÁLCULO
+      // =========================================================================
+      const brlFormatter = new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      });
+
+      function formatBRL(value) {
+        return brlFormatter.format(value);
+      }
+
+      /**
+       * Calcula todos os indicadores financeiros em centavos para evitar erro de ponto flutuante.
+       */
+      function computeTotals() {
+        let selectedUnits = 0;
+        let selectedCents = 0;
+
+        for (const item of state.products) {
+          if (item.selected) {
+            selectedUnits += item.qty;
+            selectedCents += Math.round(item.price * 100) * item.qty;
+          }
+        }
+
+        const totalBalanceCents = Math.round(TOTAL_BALANCE * 100);
+        const remainingCents = Math.max(0, totalBalanceCents - selectedCents);
+        const amountToPayCents = Math.max(0, selectedCents - totalBalanceCents);
+        const balanceUsedCents = Math.min(totalBalanceCents, selectedCents);
+
+        return {
+          selectedUnits,
+          selectedTotal: selectedCents / 100,
+          remainingBalance: remainingCents / 100,
+          amountToPay: amountToPayCents / 100,
+          balanceUsed: balanceUsedCents / 100
+        };
+      }
+
+      // =========================================================================
+      // 3. RENDERIZAÇÃO DA LISTA E ABAS
+      // =========================================================================
+      const tabContainer = document.getElementById('tabContentContainer');
+
+      function renderActiveTab() {
+        // Atualiza estado visual e ARIA das abas
+        document.querySelectorAll('[role="tab"]').forEach((btn) => {
+          const isCurrent = btn.dataset.tab === state.activeTab;
+          btn.setAttribute('aria-selected', String(isCurrent));
+          btn.classList.toggle('ts-tab-active', isCurrent);
+        });
+
+        if (state.activeTab === 'vouchers') {
+          renderVouchersTab();
+          return;
+        }
+
+        const items = state.products.filter((p) => p.tab === state.activeTab);
+        const allSelected = items.length > 0 && items.every((p) => p.selected);
+        const tabTitle = state.activeTab === 'purchased'
+          ? 'Presentes com comprador'
+          : 'Presentes sem comprador';
+        const tabSubtitle = state.activeTab === 'purchased'
+          ? 'Estes são os itens da lista que seus convidados compraram. Marque o que deseja receber na sua casa.'
+          : 'Itens da lista que não foram comprados por convidados, mas podem ser incluídos usando seu saldo disponível.';
+
+        const rowsHtml = items.map((item) => {
+          const lineTotal = item.price * item.qty;
+          const borderHighlight = item.selected
+            ? 'border-[#00684A]/40 bg-[#FBFDFC]'
+            : 'border-[var(--ts-border-subtle)] bg-white';
+
+          return `
+            <article class="rounded-[8px] border ${borderHighlight} p-4 transition-colors">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <!-- Esquerda: Checkbox + Miniatura + Info -->
+                <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+                  <label class="flex items-center pt-1 sm:pt-0 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      class="ts-checkbox js-toggle-item"
+                      data-id="${item.id}"
+                      ${item.selected ? 'checked' : ''}
+                      aria-label="Selecionar ${item.name}"
+                    />
+                  </label>
+
+                  <div class="w-14 h-14 rounded-[6px] bg-[var(--ts-brand-soft)]/70 border border-[#D8EAE3] flex items-center justify-center shrink-0" aria-hidden="true">
+                    ${PRODUCT_ICONS[item.icon] || ''}
+                  </div>
+
+                  <div class="min-w-0">
+                    <h3 class="text-sm font-bold text-[var(--ts-text-primary)] leading-snug">
+                      ${item.name}
+                    </h3>
+                    ${
+                      item.buyer
+                        ? `<p class="text-xs text-[var(--ts-text-muted)] mt-1">
+                             Comprado por: <span class="font-semibold text-[var(--ts-text-secondary)]">${item.buyer}</span>
+                           </p>`
+                        : `<p class="text-xs text-[var(--ts-text-muted)] mt-1">
+                             Disponível para resgate com saldo
+                           </p>`
+                    }
+                  </div>
+                </div>
+
+                <!-- Direita: Stepper de quantidade + Preço -->
+                <div class="flex items-center justify-between sm:justify-end gap-5 pl-8 sm:pl-0 shrink-0">
+                  <div class="inline-flex items-center border border-[var(--ts-border-subtle)] rounded-[6px] bg-white" role="group" aria-label="Quantidade de ${item.name}">
+                    <button
+                      type="button"
+                      class="js-qty-dec w-8 h-8 flex items-center justify-center text-[var(--ts-text-secondary)] hover:bg-gray-100 rounded-l-[6px] transition cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+                      data-id="${item.id}"
+                      ${item.qty <= 1 ? 'disabled' : ''}
+                      aria-label="Diminuir quantidade de ${item.name}"
+                    >
+                      −
+                    </button>
+                    <span class="w-8 text-center text-xs font-bold text-[var(--ts-text-primary)] tabular-nums" aria-live="polite">
+                      ${item.qty}
+                    </span>
+                    <button
+                      type="button"
+                      class="js-qty-inc w-8 h-8 flex items-center justify-center text-[var(--ts-text-secondary)] hover:bg-gray-100 rounded-r-[6px] transition cursor-pointer"
+                      data-id="${item.id}"
+                      aria-label="Aumentar quantidade de ${item.name}"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div class="text-right min-w-[96px]">
+                    <div class="text-sm font-bold text-[var(--ts-text-primary)] tabular-nums">
+                      ${formatBRL(lineTotal)}
+                    </div>
+                    ${
+                      item.qty > 1
+                        ? `<div class="text-[11px] text-[var(--ts-text-muted)] tabular-nums">${formatBRL(item.price)} un.</div>`
+                        : ''
+                    }
+                  </div>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+
+        tabContainer.innerHTML = `
+          <div id="panel-${state.activeTab}" role="tabpanel" aria-labelledby="tab-${state.activeTab}">
+            <div class="mb-4">
+              <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 class="text-lg font-bold text-[var(--ts-text-primary)]">
+                  ${tabTitle}
+                  <span class="text-xs font-semibold text-[var(--ts-brand-primary)] ml-2">${items.length} itens</span>
+                </h2>
+              </div>
+              <p class="text-xs text-[var(--ts-text-secondary)] mt-1">${tabSubtitle}</p>
+            </div>
+
+            <!-- Barra Selecionar Todos -->
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-[var(--ts-border-subtle)]">
+              <label class="inline-flex items-center gap-2.5 text-xs font-semibold text-[var(--ts-text-primary)] cursor-pointer select-none">
+                <input
+                  id="chkSelectAllTab"
+                  type="checkbox"
+                  class="ts-checkbox"
+                  ${allSelected ? 'checked' : ''}
+                />
+                Selecionar todos nesta aba
+              </label>
+              <span class="text-[11px] text-[var(--ts-text-muted)]">
+                Preços válidos para São Paulo
+              </span>
+            </div>
+
+            <!-- Lista de Produtos -->
+            <div class="space-y-3">
+              ${rowsHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderVouchersTab() {
+        const totalVouchers = state.vouchers.reduce((acc, v) => acc + v.amount, 0);
+
+        const voucherRows = state.vouchers.map((v) => `
+          <article class="bg-white border border-[var(--ts-border-subtle)] rounded-[8px] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3.5">
+              <div class="w-11 h-11 rounded-[6px] bg-[var(--ts-brand-soft)] text-[var(--ts-brand-primary)] flex items-center justify-center shrink-0" aria-hidden="true">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-sm font-bold text-[var(--ts-text-primary)]">${v.buyer}</h3>
+                <p class="text-xs text-[var(--ts-text-secondary)] mt-0.5">"${v.message}"</p>
+                <span class="text-[11px] text-[var(--ts-text-muted)]">Recebido em ${v.date}</span>
+              </div>
+            </div>
+            <div class="text-left sm:text-right pl-14 sm:pl-0">
+              <span class="inline-block text-[10px] font-bold uppercase tracking-wider text-[var(--ts-brand-primary)] bg-[var(--ts-brand-soft)] px-2 py-0.5 rounded-full mb-1">
+                Já no saldo
+              </span>
+              <div class="text-sm font-extrabold text-[var(--ts-text-primary)] tabular-nums">
+                ${formatBRL(v.amount)}
+              </div>
+            </div>
+          </article>
+        `).join('');
+
+        tabContainer.innerHTML = `
+          <div id="panel-vouchers" role="tabpanel" aria-labelledby="tab-vouchers">
+            <div class="mb-5">
+              <h2 class="text-lg font-bold text-[var(--ts-text-primary)]">
+                Vale-presente
+                <span class="text-xs font-semibold text-[var(--ts-brand-primary)] ml-2">${state.vouchers.length} recebidos • ${formatBRL(totalVouchers)}</span>
+              </h2>
+              <p class="text-xs text-[var(--ts-text-secondary)] mt-1.5 leading-relaxed bg-[var(--ts-brand-soft)]/60 border border-[#CBE4DB] rounded-[6px] p-3.5">
+                Os vales-presente recebidos foram automaticamente incluídos no seu saldo disponível. Eles já podem ser usados para comprar qualquer produto Tok&amp;Stok.
+              </p>
+            </div>
+            <div class="space-y-3">
+              ${voucherRows}
+            </div>
+          </div>
+        `;
+      }
+
+      // =========================================================================
+      // 4. ATUALIZAÇÃO DA CALCULADORA STICKY
+      // =========================================================================
+      function renderCalculator() {
+        const { selectedUnits, selectedTotal, remainingBalance, amountToPay } = computeTotals();
+
+        document.getElementById('calcTotalBalance').textContent = formatBRL(TOTAL_BALANCE);
+        document.getElementById('calcSelectedCount').textContent = String(selectedUnits);
+        document.getElementById('calcSelectedValue').textContent =
+          selectedTotal > 0 ? `- ${formatBRL(selectedTotal)}` : formatBRL(0);
+        document.getElementById('calcRemainingBalance').textContent = formatBRL(remainingBalance);
+
+        const elAmountToPay = document.getElementById('calcAmountToPay');
+        elAmountToPay.textContent = formatBRL(amountToPay);
+        elAmountToPay.style.color = amountToPay > 0
+          ? 'var(--ts-feedback-warning-text)'
+          : 'var(--ts-text-primary)';
+
+        const statusBanner = document.getElementById('calcStatusBanner');
+        const btnAdd = document.getElementById('btnAddToCart');
+        const btnLabel = document.getElementById('btnAddToCartLabel');
+
+        if (selectedUnits === 0) {
+          statusBanner.className = 'rounded-[6px] p-3.5 text-xs leading-relaxed mb-5 bg-[var(--ts-surface-bg)] border border-[var(--ts-border-subtle)] text-[var(--ts-text-secondary)]';
+          statusBanner.textContent = 'Selecione os itens desejados para utilizar seu saldo disponível.';
+          btnAdd.disabled = true;
+          btnLabel.textContent = 'SELECIONE ITENS PARA CONTINUAR';
+        } else if (amountToPay === 0) {
+          statusBanner.className = 'rounded-[6px] p-3.5 text-xs leading-relaxed mb-5 bg-[var(--ts-brand-soft)] border border-[#CBE4DB] text-[var(--ts-brand-primary)] font-medium';
+          statusBanner.textContent = 'Que legal! Sua compra inteira está dentro do seu saldo disponível.';
+          btnAdd.disabled = false;
+          btnLabel.textContent = selectedUnits === 1
+            ? 'ADICIONAR 1 ITEM NO CARRINHO'
+            : `ADICIONAR ${selectedUnits} ITENS NO CARRINHO`;
+        } else {
+          statusBanner.className = 'rounded-[6px] p-3.5 text-xs leading-relaxed mb-5 bg-[var(--ts-feedback-warning-bg)] border border-amber-300 text-[var(--ts-feedback-warning-text)] font-medium';
+          statusBanner.textContent = `Sua seleção excede o saldo em ${formatBRL(amountToPay)}. Você pagará apenas essa diferença no checkout.`;
+          btnAdd.disabled = false;
+          btnLabel.textContent = selectedUnits === 1
+            ? 'ADICIONAR 1 ITEM NO CARRINHO'
+            : `ADICIONAR ${selectedUnits} ITENS NO CARRINHO`;
+        }
+      }
+
+      // =========================================================================
+      // 5. GERENCIAMENTO DE MODAIS & ACESSIBILIDADE (ESC / BACKDROP)
+      // =========================================================================
+      function openModal(modalId) {
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        el.classList.remove('hidden');
+        el.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeModal(modalId) {
+        if (modalId === 'modalCloseList' && state.isClosingLoading) return;
+        const el = document.getElementById(modalId);
+        if (!el) return;
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+        document.body.style.overflow = '';
+      }
+
+      function closeAllModals() {
+        if (state.isClosingLoading) return;
+        ['modalStatement', 'modalCloseList', 'modalCartSuccess', 'modalTokens'].forEach(closeModal);
+      }
+
+      // Fechar ao clicar em botões [data-close-modal] ou no backdrop
+      document.addEventListener('click', (e) => {
+        const closeTrigger = e.target.closest('[data-close-modal]');
+        if (closeTrigger) {
+          closeModal(closeTrigger.dataset.closeModal);
+          return;
+        }
+        if (e.target.matches('[role="dialog"]')) {
+          closeModal(e.target.id);
+        }
+      });
+
+      // Fechar com tecla ESC
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          closeAllModals();
+        }
+      });
+
+      // =========================================================================
+      // 6. EVENTOS DE INTERAÇÃO DA LISTA, ABAS E MODAIS
+      // =========================================================================
+      // Troca de abas
+      document.querySelectorAll('[role="tab"]').forEach((tabBtn) => {
+        tabBtn.addEventListener('click', () => {
+          state.activeTab = tabBtn.dataset.tab;
+          renderActiveTab();
+        });
+      });
+
+      // Delegação de eventos dentro da lista de produtos
+      tabContainer.addEventListener('change', (e) => {
+        if (e.target.id === 'chkSelectAllTab') {
+          const checked = e.target.checked;
+          state.products.forEach((p) => {
+            if (p.tab === state.activeTab) p.selected = checked;
+          });
+          renderActiveTab();
+          renderCalculator();
+          return;
+        }
+
+        if (e.target.classList.contains('js-toggle-item')) {
+          const id = e.target.dataset.id;
+          const item = state.products.find((p) => p.id === id);
+          if (item) {
+            item.selected = e.target.checked;
+            renderActiveTab();
+            renderCalculator();
+          }
+        }
+      });
+
+      tabContainer.addEventListener('click', (e) => {
+        const incBtn = e.target.closest('.js-qty-inc');
+        if (incBtn) {
+          const item = state.products.find((p) => p.id === incBtn.dataset.id);
+          if (item) {
+            item.qty += 1;
+            item.selected = true; // Auto-seleciona ao alterar quantidade para evitar fricção
+            renderActiveTab();
+            renderCalculator();
+          }
+          return;
+        }
+
+        const decBtn = e.target.closest('.js-qty-dec');
+        if (decBtn) {
+          const item = state.products.find((p) => p.id === decBtn.dataset.id);
+          if (item && item.qty > 1) {
+            item.qty -= 1;
+            renderActiveTab();
+            renderCalculator();
+          }
+        }
+      });
+
+      // Fechar banner escuro de prazo
+      document.getElementById('btnDismissBanner').addEventListener('click', () => {
+        document.getElementById('deadlineBanner').classList.add('hidden');
+      });
+
+      // Abrir Modal "Seu extrato"
+      document.getElementById('btnOpenStatement').addEventListener('click', () => {
+        openModal('modalStatement');
+      });
+
+      // Fluxo de Fricção Intencional: Encerrar Lista -> Loading (1,5s) -> Sucesso
+      document.getElementById('btnOpenCloseFlow').addEventListener('click', () => {
+        document.getElementById('closeStepConfirm').classList.remove('hidden');
+        document.getElementById('closeStepLoading').classList.add('hidden');
+        document.getElementById('closeStepSuccess').classList.add('hidden');
+        openModal('modalCloseList');
+      });
+
+      document.getElementById('btnConfirmCloseList').addEventListener('click', () => {
+        state.isClosingLoading = true;
+        document.getElementById('closeStepConfirm').classList.add('hidden');
+        document.getElementById('closeStepLoading').classList.remove('hidden');
+
+        setTimeout(() => {
+          state.isClosingLoading = false;
+          document.getElementById('closeStepLoading').classList.add('hidden');
+          document.getElementById('closeStepSuccess').classList.remove('hidden');
+        }, 1500);
+      });
+
+      // CTA Principal: Adicionar ao Carrinho
+      document.getElementById('btnAddToCart').addEventListener('click', () => {
+        const totals = computeTotals();
+        if (totals.selectedUnits === 0) return;
+
+        const plural = totals.selectedUnits === 1 ? '1 item foi enviado' : `${totals.selectedUnits} itens foram enviados`;
+        document.getElementById('cartSuccessSubtitle').textContent =
+          `${plural} para o seu carrinho da Tok&Stok com entrega e montagem grátis aplicadas na 1ª entrega.`;
+
+        document.getElementById('cartSuccessSummary').innerHTML = `
+          <div class="flex justify-between">
+            <dt class="text-[var(--ts-text-secondary)]">Total dos itens</dt>
+            <dd class="font-semibold text-[var(--ts-text-primary)] tabular-nums">${formatBRL(totals.selectedTotal)}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-[var(--ts-text-secondary)]">Abatido do seu saldo</dt>
+            <dd class="font-bold text-[var(--ts-brand-primary)] tabular-nums">- ${formatBRL(totals.balanceUsed)}</dd>
+          </div>
+          <div class="flex justify-between">
+            <dt class="text-[var(--ts-text-secondary)]">Saldo restante na conta</dt>
+            <dd class="font-semibold text-[var(--ts-text-primary)] tabular-nums">${formatBRL(totals.remainingBalance)}</dd>
+          </div>
+          <hr class="border-[var(--ts-border-subtle)] my-2" />
+          <div class="flex justify-between text-base">
+            <dt class="font-bold text-[var(--ts-text-primary)]">Diferença a pagar</dt>
+            <dd class="font-extrabold ${totals.amountToPay > 0 ? 'text-[var(--ts-feedback-warning-text)]' : 'text-[var(--ts-brand-primary)]'} tabular-nums">
+              ${formatBRL(totals.amountToPay)}
+            </dd>
+          </div>
+        `;
+
+        openModal('modalCartSuccess');
+      });
+
+      // =========================================================================
+      // 7. PAINEL DE DESIGN TOKENS + CÓPIA SEGURA PARA CLIPBOARD
+      // =========================================================================
+      function buildTokensInspector() {
+        const grid = document.getElementById('tokenSwatchesGrid');
+        grid.innerHTML = DESIGN_TOKENS.map((t) => `
+          <div class="flex items-center justify-between p-2.5 rounded-[6px] border border-[var(--ts-border-subtle)] bg-white">
+            <div class="flex items-center gap-3 min-w-0">
+              <span class="w-7 h-7 rounded-[4px] border border-black/10 shrink-0" style="background-color: ${t.value};"></span>
+              <div class="min-w-0">
+                <div class="text-xs font-bold text-[var(--ts-text-primary)] truncate font-mono">${t.name}</div>
+                <div class="text-[11px] text-[var(--ts-text-muted)]">${t.label}</div>
+              </div>
+            </div>
+            <span class="text-xs font-mono font-semibold text-[var(--ts-text-secondary)] ml-2">${t.value}</span>
+          </div>
+        `).join('');
+
+        const rootSnippet = `:root {\n${DESIGN_TOKENS.map((t) => `  ${t.name}: ${t.value};`).join('\n')}\n  --ts-font-family: 'Plus Jakarta Sans', sans-serif;\n  --ts-radius-btn: 6px;\n  --ts-radius-card: 8px;\n}`;
+        document.getElementById('cssTokensCode').textContent = rootSnippet;
+
+        document.getElementById('btnCopyTokens').addEventListener('click', () => {
+          const textarea = document.createElement('textarea');
+          textarea.value = rootSnippet;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          try {
+            document.execCommand('copy');
+            const label = document.getElementById('copyTokensLabel');
+            label.textContent = 'Copiado!';
+            setTimeout(() => {
+              label.textContent = 'Copiar CSS';
+            }, 1800);
+          } catch (err) {
+            // Falha silenciosa segura
+          }
+          document.body.removeChild(textarea);
+        });
+      }
+
+      document.getElementById('btnOpenTokens').addEventListener('click', () => {
+        openModal('modalTokens');
+      });
+
+      // Inicialização
+      buildTokensInspector();
+      renderActiveTab();
+      renderCalculator();
+    })();
+  </script>
+</body>
+</html>
